@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block head %}
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-T3VS96PWRD"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-T3VS96PWRD', {
+      page_title: 'Done (B)',
+      page_location: 'https://kaleemullah.pythonanywhere.com/confirmation_b'
+  });
+</script>
+
+<title>Done</title>
+
+{% endblock %}
+
+{% block body %}
+
+<p>Thank you for your time, please go back to the questionnaire</p>
+<p>Please use this number on the Qualtrics Questionnaire: {{ visitor_id }}</p>
+
+{% endblock %}
