@@ -1,4 +1,4 @@
-from flask import Flask, request, session
+from flask import Flask, request, session, render_template
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from flask_session import Session
@@ -16,7 +16,7 @@ Session(app)
 db = SQLAlchemy(app)
 
 # Database model for Website A
-class PageView_A(db.Model):
+class PageView(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     visitor_id = db.Column(db.String(10))
     page = db.Column(db.String(255))
@@ -24,13 +24,6 @@ class PageView_A(db.Model):
     start_time = db.Column(db.DateTime)
 
 
-# Database model for Website B
-class PageView_B(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    visitor_id = db.Column(db.String(10))
-    page = db.Column(db.String(255))
-    time_spent = db.Column(db.Integer)
-    start_time = db.Column(db.DateTime)
 
 # Create all the tables for the databases
 with app.app_context():
@@ -50,7 +43,7 @@ def track_time(response):
     if request.path == '/learn_more':
         try:
             time_spent = (datetime.now() - start_time).total_seconds()
-            page_view = PageView_A(
+            page_view = PageView(
                     visitor_id = session.get('visitor_id'),
                     page=previous_path,
                     time_spent=time_spent,
@@ -66,7 +59,7 @@ def track_time(response):
 
     if request.path == '/confirmation':
         time_spent = (datetime.now() - start_time).total_seconds()
-        page_view = PageView_A(
+        page_view = PageView(
                 visitor_id=session.get('visitor_id'),
                 page=previous_path,
                 time_spent=time_spent,
@@ -78,48 +71,36 @@ def track_time(response):
         del start_time, previous_path
 
 
-
-
-    # Adding data for the time spent for website B to database PageView_B
-    if request.path == '/website_b':
-        # Start Timer for website b
-        start_time = datetime.now()
-        previous_path = 'HomePage B'
-
-    if request.path == '/learn_more_b':
-        try:
-            time_spent = (datetime.now() - start_time).total_seconds()
-            page_view = PageView_B(
-                    visitor_id=session.get('visitor_id'),
-                    page=previous_path,
-                    time_spent=time_spent,
-                    start_time=start_time)
-            db.session.add(page_view)
-            db.session.commit()
-        except:
-            pass
-        finally:
-            # Update global variables
-            start_time = datetime.now()
-            previous_path = 'Learn More B'
-
-    if request.path == '/confirmation_b':
-        time_spent = (datetime.now() - start_time).total_seconds()
-        page_view = PageView_B(
-                visitor_id=session.get('visitor_id'),
-                page=previous_path,
-                time_spent=time_spent,
-                start_time=start_time)
-        db.session.add(page_view)
-        db.session.commit()
-
-        del start_time, previous_path
-
     return response
 
 
 ##################################################################################
-from routes import *
+#
+# Routes
+#
+
+@app.route('/')
+def index():
+    # Getting the unique id from the webpage url
+    visitor_id = request.args.get('uid')
+    if visitor_id:
+        # Add ID to session.
+        session["visitor_id"] = visitor_id
+    return render_template('index.html')
+
+
+@app.route('/learn_more')
+def learn_more():
+    return render_template('learn_more.html')
+
+
+@app.route('/confirmation')
+def confirmation():
+    visitor_id = session.get("visitor_id")
+    return render_template('done.html', visitor_id = visitor_id)
+
+
+
 
 if __name__ == '__main__':
     app.run(port=4000, debug = True)
