@@ -58,17 +58,20 @@ def track_time(response):
             previous_path = 'Learn More'
 
     if request.path == '/confirmation':
-        time_spent = (datetime.now() - start_time).total_seconds()
-        page_view = PageView(
-                visitor_id=session.get('visitor_id'),
-                page=previous_path,
-                time_spent=time_spent,
-                start_time=start_time)
-        db.session.add(page_view)
-        db.session.commit()
-
-        # Delete start_time and previous_path variables
-        del start_time, previous_path
+        try:
+            time_spent = (datetime.now() - start_time).total_seconds()
+            page_view = PageView(
+                    visitor_id=session.get('visitor_id'),
+                    page=previous_path,
+                    time_spent=time_spent,
+                    start_time=start_time)
+            db.session.add(page_view)
+            db.session.commit()
+        except:
+            pass
+        finally:
+            # Delete start_time and previous_path variables
+            del start_time, previous_path
 
 
     return response
@@ -88,7 +91,6 @@ def index():
         session["visitor_id"] = visitor_id
     return render_template('index.html')
 
-
 @app.route('/learn_more')
 def learn_more():
     return render_template('learn_more.html')
@@ -98,9 +100,6 @@ def learn_more():
 def confirmation():
     visitor_id = session.get("visitor_id")
     return render_template('done.html', visitor_id = visitor_id)
-
-
-
 
 if __name__ == '__main__':
     app.run(port=4000, debug = True)

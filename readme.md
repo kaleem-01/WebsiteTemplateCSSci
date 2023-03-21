@@ -8,14 +8,13 @@ output:
 test_website is a Python flask web application. It tracks the time spent for each new visitor for the paths specified in the `track_time()` functions. It serves as an example web application for Computational Social Science students.
 
 
-## 1. Dependencies
+## Dependencies
 
 ```python
 from flask import Flask, session, request, render_template
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from flask_session import Session
-import random
 ```
 The required packages are in the 'req.txt' file and can be installed using:
 `pip install -r req.txt`.
@@ -36,7 +35,8 @@ i) Flask = Configures the application.
 ii) session = Used to store session specific information.
 
 iii) request = Contains the attribute `path` for every request that the user makes in Unicode.
-render_template = Used to render html templates stored in the 'templates' folder.
+
+iv) render_template = Used to render html templates stored in the 'templates' folder.
 
 _datetime:_
 
@@ -51,7 +51,7 @@ _flask_session:_
 i) Session: Setting up flask sessions for each new visitor.
 
 
-## 2. Configuring the application, session and databases
+## Configuring the application, session and databases
 
 ```python
 # Configure app
@@ -69,7 +69,7 @@ db = SQLAlchemy(app)
 
 The code used here is the standard for app configuration. The app is called app and is a Flask object. The session is configured such that the files are stored in memory in the filesystem. The folder 'flask_session' contains the data from user sessions. The database in initialised using SQLAlchemy. 
 
-## 3. Database Models
+## Database Models
 ```python
 class PageView(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -107,14 +107,6 @@ def index():
 To be able to track the time a user spends on the website, we first need to keep track of the user. Information in each new user session can be stored as a 'key, value' pair in the `session` object. The visitor ID is retrieved from the URL using `request.args.get()` function. In Qualtrics we assigned this to be called uid, and it is added to the URL in this manner:
 `www.example.com\?uid=xxxxxxxxxx`. If the user has visits the website without the visitor id from qualtrics, the `visitor_id` is None. The session object remembers the `visitor_id` of the user. This way if the same user reloads the page, we know that it is not a unique visit.
 
-```python
-
-@app.route('/learn_more')
-def learn_more():
-    add_visitor()
-    return render_template('learn_more.html')
-```
-
 Routing each webpage in the website can be done with the help of the `app.route()` decorator. The string inside this decorator can be considered the name of the webpage. '/' refers to the index of the website. This is the homepage. If the website is 'www.example.com', the `app.route('/learn_more') refers to the webpage 'www.example.com/learn_more'.
 
 The function runs when the specified route is used by the user. There is a template made in HTML for each webpage which is stored in the 'templates' folder. For example, if the user opens the homepage, the `app.route('/')` is run, which allows the function `index()` to execute and the html file ('index.html') is returned using the function `render_template`.
@@ -151,23 +143,26 @@ def track_time(response):
             previous_path = 'Learn More'
 
     if request.path == '/confirmation':
-        time_spent = (datetime.now() - start_time).total_seconds()
-        page_view = PageView(
-                visitor_id=session.get('visitor_id'),
-                page=previous_path,
-                time_spent=time_spent,
-                start_time=start_time)
-        db.session.add(page_view)
-        db.session.commit()
-        
-        # Delete start_time and previous_path variables
-        del start_time, previous_path
+        try:
+            time_spent = (datetime.now() - start_time).total_seconds()
+            page_view = PageView(
+                    visitor_id=session.get('visitor_id'),
+                    page=previous_path,
+                    time_spent=time_spent,
+                    start_time=start_time)
+            db.session.add(page_view)
+            db.session.commit()
+        except:
+            pass
+        finally:    
+            # Delete start_time and previous_path variables
+            del start_time, previous_path
 
 ```
 
-The function decorator `@app.after_request` is used with the `track_time()` function. This decorator runs the function after every request made by the user. The global variable `start_time` is used to keep track of time. The global variable `previous_path` is used to keep track of what the user visited before requesting the current page. `request.path` contains the information of the path of the website that the user requested. We expect the users to go linearly through the website. The user opens the homepage, then either goes to '/learn_more' or  '/confirmation'. 
+The function decorator `@app.after_request` is used with the `track_time()` function. This decorator runs the function after every request made by the user. A request here means requesting a webpage. This function basically runs at each webpage. The global variable `start_time` is used to keep track of time. The global variable `previous_path` is used to keep track of what the user visited before requesting the current page. `request.path` contains the information of the path of the website that the user requested. We expect the users to go linearly through the website. The user opens the homepage, then either goes to '/learn_more' or  '/confirmation'. 
 
-Every time the user visits the '/learn_more' page and the '/confirmation' page, we add the data for the time spent to the database. The 'visitor_id' is the id assigned to the user when the user visited the app.  
+Every time the user visits the '/learn_more' page and the '/confirmation' page, we add the data for the time spent to the database. The 'visitor_id' is the id assigned to the user when the user visited the homepage.  
 
-The variables start_time and previous path are removed at the confirmation page. If the user goes back to the learn_more page after the confirmation page, the program throws an error since the 'start_time' and 'previous_path' variables have been deleted. The try-except block is for error handling. This way the websit will still run, even if you made some mistake in the web application. You can add something in the except block to check if there are any errors in your app.
+The variables start_time and previous path are removed at the confirmation page. If the user goes back to the learn_more page after the confirmation page, the program throws an error since the 'start_time' and 'previous_path' variables have been deleted. The try-except block is for error handling. This way the website will still run, even if the user does not follow your instructions. You can also make explicit exceptions depending on the error you expect. 
 
