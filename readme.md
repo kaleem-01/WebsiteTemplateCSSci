@@ -15,7 +15,6 @@ from flask import Flask, session, request, render_template
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from flask_session import Session
-import random
 ```
 The required packages are in the 'req.txt' file and can be installed using:
 `pip install -r req.txt`.
