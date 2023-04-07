@@ -1,3 +1,7 @@
+'''
+Author: Kaleem Ullah
+This program serves as a template for a Flask app. Consult the manual for more information
+'''
 from flask import Flask, request, session, render_template, redirect
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
@@ -24,6 +28,7 @@ class PageView(db.Model):
     time_spent = db.Column(db.Integer)
     start_time = db.Column(db.DateTime)
 
+
 # Database table for the binary variable
 class Button(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -38,15 +43,18 @@ with app.app_context():
 
 # Function to log data
 def log_data():
-    time_spent = (datetime.now() - start_time).total_seconds()
-    page_view = PageView(
-                    visitor_id = session.get('visitor_id'),
-                    page=previous_path,
-                    time_spent=time_spent,
-                    start_time=start_time)
-    db.session.add(page_view)
-    db.session.commit()
-
+    try:
+        time_spent = (datetime.now() - start_time).total_seconds()
+        if time_spent > 3:
+            page_view = PageView(
+                visitor_id=session.get('visitor_id'),
+                page=previous_path,
+                time_spent=time_spent,
+                start_time=start_time)
+            db.session.add(page_view)
+            db.session.commit()
+    except:
+        pass
 
 @app.after_request
 def track_time(response):
@@ -55,45 +63,26 @@ def track_time(response):
 
     # Initiate start time for homepage
     if request.path == '/':
-        try:
-            log_data()
-        except:
-            pass
-        finally:
-            start_time = datetime.now()
-            previous_path = 'HomePage'
-
+        log_data()
+        start_time = datetime.now()
+        previous_path = 'HomePage'
 
     # Adding data for the time spent for website A to database PageView
     if request.path == '/learn_more':
-        try:
-            log_data()
-        except:
-            pass
-        finally:
+        log_data()
         # Update start_time and previous_path
-            start_time = datetime.now()
-            previous_path = 'Learn More'
+        start_time = datetime.now()
+        previous_path = 'Learn More'
 
     if request.path == '/confirmation':
+        log_data()
         try:
-            log_data()
+            # Delete start_time and previous_path variables
+            del start_time, previous_path
         except:
             pass
-        # Delete start_time and previous_path variables
-        finally:
-            del start_time, previous_path
-
     return response
 
-
-# @app.after_request
-# def remove_variables():
-#     global start_time
-#     if request.path == '/confirmation':
-#         del start_time
-    
-    
 
 ##################################################################################
 #
@@ -107,34 +96,31 @@ def index():
     if visitor_id:
         # Add ID to session.
         session["visitor_id"] = visitor_id
-    session["start_time"] = datetime.now()
-    session['previous_path'] = "/"
     return render_template("index.html")
+
 
 @app.route('/learn_more')
 def learn_more():
-    session["previous_path"] = "/learn_more"
-    session["start_time"] = datetime.now()
     return render_template('learn_more.html')
 
 
 @app.route('/confirmation')
 def confirmation():
-    visitor_id = session.get("visitor_id")
-    session["previous_path"] = "/confirmation"
-    session["start_time"] = datetime.now()
-    return render_template('done.html', visitor_id = visitor_id)
+    return render_template('done.html')
+
 
 @app.route("/log_binary")
 def button_tracking():
-    global previous_path
-    button_click = Button(
-                    visitor_id = session.get('visitor_id'),
-                    button = True)
-    db.session.add(button_click)
-    db.session.commit()
-    
+    try:
+        button_click = Button(
+            visitor_id=session.get('visitor_id'),
+            button=True)
+        db.session.add(button_click)
+        db.session.commit()
+    except:
+        pass
     return redirect('/')
 
+
 if __name__ == '__main__':
-    app.run(port=3000, debug = True)
+    app.run(port=3000, debug=True)
