@@ -3,28 +3,7 @@
 {% block head %}
 
 
-
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-5SV8KLZXZJ"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-5SV8KLZXZJ', {
-      page_title: 'Climate Change',
-      page_location: 'https://kaleemullah.pythonanywhere.com/'
-  });
-
-</script>
-
-
-    <script>
-let startTime = new Date();
-document.cookie = "start_time" + startTime;
-    </script>
-
-
-        <title>Climate Change</title>
+    <title>Climate Change</title>
 
             <ol>
                 <li><img style="padding: 50px; max-width: 800px" src="static/img/climate.jpg"></li>
@@ -43,6 +22,7 @@ document.cookie = "start_time" + startTime;
                 <ul class="no-bullets list--inline pb1 bold">
                     <li class="small mr2"><a class="link link--text" href="/learn_more">Learn More</a></li>
                     <li class="small mr2"><a class="link link--text" href="/confirmation">Done</a></li>
+                    <li class="small mr2"><a class="link link--text" href="/log_binary">Contact</a></li>
 
                 </ul>
             </nav>
@@ -73,13 +53,6 @@ document.cookie = "start_time" + startTime;
             </footer>
         </div><!-- end Body -->
 
-    <script>
-window.onbeforeunload = function timer(){
-    let endTime = new Date();
-    let timeSpent = (endTime - startTime) / 1000;
-    document.cookie = "time_spent=" + timeSpent;
-}
-    </script>
 
 
 {% endblock %}
