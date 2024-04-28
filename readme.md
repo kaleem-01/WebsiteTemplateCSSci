@@ -1,11 +1,3 @@
----
-title: "Manual for test_website"
-author: "Author: Kaleem Ullah"
-output:
-  pdf_document: default
-  html_document: default
----
-
 ## Purpose
 test_website is a Python flask web application. It tracks the time spent for each new visitor for the paths specified in the `track_time()` functions. It serves as an example web application for Computational Social Science students.
 
